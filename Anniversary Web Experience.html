@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Anniversary, My Jaan ❤️</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            roseGold: '#E8C39E',
+            velvetRed: '#4A0E17',
+            deepRuby: '#800A1D',
+            romanticPink: '#FFB7C5',
+            goldAccent: '#F3E5AB',
+            nightBg: '#0F0509',
+          },
+          fontFamily: {
+            serif: ['Cormorant Garamond', 'serif'],
+            cursive: ['Great Vibes', 'cursive'],
+            sans: ['Montserrat', 'sans-serif'],
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+              '50%': { transform: 'translateY(-15px) rotate(3deg)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { opacity: '0.6', filter: 'drop-shadow(0 0 10px rgba(255,183,197,0.5))' },
+              '50%': { opacity: '1', filter: 'drop-shadow(0 0 25px rgba(255,183,197,0.9))' },
+            },
+            shimmer: {
+              '100%': { transform: 'translateX(100%)' },
+            }
+          },
+          animation: {
+            float: 'float 6s ease-in-out infinite',
+            pulseGlow: 'pulseGlow 3s ease-in-out infinite',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0F0509;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #800A1D;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #FFB7C5;
+    }
+
+    /* Glassmorphism Styling */
+    .glass-card {
+      background: rgba(45, 12, 22, 0.45);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 183, 197, 0.18);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .glass-card-gold {
+      background: rgba(30, 10, 18, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(243, 229, 171, 0.3);
+      box-shadow: 0 0 20px rgba(243, 229, 171, 0.1);
+    }
+
+    /* Trail Canvas */
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    /* Card Flip Effect */
+    .perspective {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    /* Envelope styling */
+    .envelope-wrapper {
+      perspective: 1000px;
+    }
+    .envelope {
+      position: relative;
+      transition: transform 0.6s ease;
+    }
+
+    /* Glowing Text Effect */
+    .glow-text-gold {
+      text-shadow: 0 0 10px rgba(243, 229, 171, 0.6), 0 0 20px rgba(243, 229, 171, 0.3);
+    }
+    .glow-text-pink {
+      text-shadow: 0 0 12px rgba(255, 183, 197, 0.7), 0 0 25px rgba(216, 27, 96, 0.4);
+    }
+
+    /* Cake Candles Flame */
+    .candle-flame {
+      background: radial-gradient(ellipse at bottom, #FFF 0%, #FFD700 25%, #FF4500 80%, transparent 100%);
+      border-radius: 50% 50% 20% 20%;
+      box-shadow: 0 0 15px #FFD700, 0 -5px 20px #FF4500;
+      animation: flicker 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes flicker {
+      0% { transform: scale(1) rotate(-2deg); opacity: 0.9; }
+      100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-nightBg text-gray-100 font-sans overflow-x-hidden selection:bg-deepRuby selection:text-white relative">
+
+  <!-- Interactive Particle Trailing Canvas -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Ambient Sound Control Floating Button -->
+  <div class="fixed top-5 right-5 z-50 flex items-center gap-3">
+    <button id="music-toggle" class="glass-card-gold p-3 rounded-full text-goldAccent hover:scale-110 transition-all duration-300 shadow-lg flex items-center justify-center group" title="Toggle Soft Ambient Music">
+      <i data-lucide="music" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+    </button>
+  </div>
+
+  <!-- FLOATING BALLOONS CONTAINER (DYNAMIC JS INJECTED) -->
+  <div id="balloons-container" class="fixed inset-0 pointer-events-none z-20 overflow-hidden"></div>
+
+  <!-- HERO SECTION -->
+  <section class="min-h-screen relative flex flex-col justify-center items-center text-center px-4 py-20 overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-velvetRed/40 via-nightBg to-nightBg">
+    <!-- Starry Background Overlay -->
+    <div class="absolute inset-0 bg-[radial-gradient(#FFB7C5_1px,transparent_1px)] [background-size:32px_32px] opacity-20 animate-pulse"></div>
+
+    <!-- Soft Heart Floating Particles Background -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden" id="hero-hearts"></div>
+
+    <div class="relative z-10 max-w-4xl mx-auto space-y-6">
+      <span class="inline-block px-4 py-1.5 rounded-full glass-card text-roseGold text-xs md:text-sm tracking-widest uppercase font-semibold border border-roseGold/30 shadow-inner">
+        ✨ Official Anniversary • October 23rd ✨
+      </span>
+
+      <h1 class="font-cursive text-5xl sm:text-7xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-roseGold via-romanticPink to-goldAccent glow-text-pink leading-tight py-2">
+        Happy Anniversary, My Jaan ❤️
+      </h1>
+
+      <p class="font-serif italic text-xl md:text-3xl text-gray-200 max-w-2xl mx-auto leading-relaxed">
+        "My Angel, My Humdum, My Everything..."
+      </p>
+
+      <div class="p-6 md:p-8 rounded-2xl glass-card border border-roseGold/20 max-w-xl mx-auto shadow-2xl space-y-4">
+        <p class="text-sm md:text-base text-gray-300 font-light leading-relaxed">
+          Today marks the blessed day our story became our forever love story. To my heart, today feels like Eid... more than Eid. It's the day Allah blessed my entire life with an angel like you.
+        </p>
+        <div class="pt-2 text-goldAccent font-serif italic text-lg border-t border-roseGold/10">
+          Alhamdulillah, Alhamdulillah, Alhamdulillah. 🤲🏻
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="pt-6 flex flex-wrap justify-center gap-4">
+        <a href="#cake-section" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-deepRuby to-velvetRed text-roseGold border border-roseGold/40 font-semibold shadow-lg hover:shadow-pink-900/50 hover:scale-105 transition-all flex items-center gap-2">
+          <i data-lucide="cake" class="w-5 h-5"></i> Cut Our Anniversary Cake
+        </a>
+        <a href="#letter-section" class="px-8 py-3.5 rounded-full glass-card text-gray-200 font-semibold hover:bg-roseGold/10 hover:text-roseGold hover:scale-105 transition-all flex items-center gap-2">
+          <i data-lucide="heart" class="w-5 h-5 text-romanticPink"></i> Read Love Journal
+        </a>
+      </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-roseGold/60 animate-bounce flex flex-col items-center gap-1">
+      <span class="text-xs uppercase tracking-widest font-light">Scroll down for magic</span>
+      <i data-lucide="chevron-down" class="w-5 h-5"></i>
+    </div>
+  </section>
+
+
+  <!-- INTERACTIVE ANNIVERSARY CAKE CEREMONY -->
+  <section id="cake-section" class="py-24 px-4 relative bg-gradient-to-b from-nightBg via-velvetRed/20 to-nightBg flex flex-col items-center">
+    <div class="max-w-3xl text-center space-y-4 mb-12">
+      <h2 class="font-cursive text-4xl sm:text-6xl text-roseGold glow-text-gold">
+        Celebration of Our Sweet Love 🎂
+      </h2>
+      <p class="text-gray-300 font-light text-sm md:text-base">
+        Click on the candles to blow them out with a wish, then click the cake to cut a slice of sweet memories together!
+      </p>
+    </div>
+
+    <!-- Interactive Cake Display Box -->
+    <div class="relative w-full max-w-md glass-card p-8 rounded-3xl border border-roseGold/30 shadow-2xl flex flex-col items-center justify-center min-h-[420px]">
+      
+      <!-- Interactive Cake SVG Visual -->
+      <div id="cake-container" class="relative cursor-pointer group transition-transform duration-300 hover:scale-105">
+        
+        <!-- Candles Layer -->
+        <div id="candles-group" class="absolute -top-12 left-0 right-0 flex justify-center gap-6 z-20">
+          <!-- Candle 1 -->
+          <div class="candle flex flex-col items-center cursor-pointer" onclick="extinguishCandle(this, event)">
+            <div class="candle-flame w-3.5 h-6"></div>
+            <div class="w-1.5 h-3 bg-gray-200"></div>
+            <div class="w-3.5 h-10 bg-gradient-to-b from-romanticPink to-deepRuby rounded-sm shadow-md"></div>
+          </div>
+          <!-- Candle 2 (Center) -->
+          <div class="candle flex flex-col items-center cursor-pointer" onclick="extinguishCandle(this, event)">
+            <div class="candle-flame w-4 h-7"></div>
+            <div class="w-1.5 h-3 bg-gray-200"></div>
+            <div class="w-4 h-12 bg-gradient-to-b from-goldAccent to-amber-600 rounded-sm shadow-md"></div>
+          </div>
+          <!-- Candle 3 -->
+          <div class="candle flex flex-col items-center cursor-pointer" onclick="extinguishCandle(this, event)">
+            <div class="candle-flame w-3.5 h-6"></div>
+            <div class="w-1.5 h-3 bg-gray-200"></div>
+            <div class="w-3.5 h-10 bg-gradient-to-b from-romanticPink to-deepRuby rounded-sm shadow-md"></div>
+          </div>
+        </div>
+
+        <!-- Tier 1 (Top) -->
+        <div class="w-36 h-16 bg-gradient-to-r from-pink-300 via-roseGold to-pink-200 rounded-t-2xl mx-auto shadow-md border-b-2 border-rose-400 relative overflow-hidden flex items-center justify-center">
+          <span class="text-xs font-cursive text-deepRuby font-bold">23 Oct</span>
+          <!-- Cream drip design -->
+          <div class="absolute top-0 inset-x-0 h-4 bg-white/80 rounded-b-xl"></div>
+        </div>
+
+        <!-- Tier 2 (Middle) -->
+        <div class="w-52 h-20 bg-gradient-to-r from-deepRuby via-red-900 to-velvetRed rounded-t-2xl mx-auto shadow-lg border-b-2 border-goldAccent/40 relative overflow-hidden flex items-center justify-center">
+          <div class="text-goldAccent font-serif text-xs tracking-widest uppercase">Jaan & Angel</div>
+          <div class="absolute top-0 inset-x-0 h-4 bg-pink-200/90 rounded-b-xl"></div>
+        </div>
+
+        <!-- Tier 3 (Bottom) -->
+        <div class="w-68 w-[280px] h-24 bg-gradient-to-r from-roseGold via-amber-100 to-roseGold rounded-t-3xl mx-auto shadow-xl relative overflow-hidden flex items-center justify-center">
+          <div class="text-deepRuby font-cursive text-xl font-bold">Together Forever</div>
+          <div class="absolute top-0 inset-x-0 h-5 bg-velvetRed/80 rounded-b-xl"></div>
+        </div>
+
+        <!-- Cake Stand Base -->
+        <div class="w-[320px] h-5 bg-gradient-to-r from-gray-300 via-white to-gray-400 rounded-full shadow-2xl mx-auto mt-1 border-t border-white"></div>
+        <div class="w-32 h-6 bg-gradient-to-b from-gray-400 to-gray-600 rounded-b-xl mx-auto"></div>
+
+        <!-- Cut Cake Knife Indicator Overlay -->
+        <div id="knife-hint" class="absolute inset-0 bg-black/30 backdrop-blur-[2px] rounded-2xl flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity z-30">
+          <i data-lucide="utensils" class="w-8 h-8 text-goldAccent animate-bounce mb-2"></i>
+          <span class="text-xs font-semibold tracking-wider text-roseGold">Click to Cut Cake 🔪</span>
+        </div>
+      </div>
+
+      <!-- Interactive Cut Action Trigger -->
+      <button onclick="cutCake()" class="mt-8 px-6 py-2.5 rounded-full bg-gradient-to-r from-goldAccent to-roseGold text-deepRuby font-semibold text-sm shadow-md hover:scale-105 transition-all flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-4 h-4"></i> Cut Anniversary Cake
+      </button>
+
+      <!-- Celebratory Wish Pop-up Message -->
+      <div id="cake-wish-modal" class="hidden absolute inset-0 glass-card bg-nightBg/95 p-6 rounded-3xl flex flex-col items-center justify-center text-center z-40 animate-fade-in border-2 border-goldAccent">
+        <div class="w-12 h-12 rounded-full bg-deepRuby/50 border border-goldAccent flex items-center justify-center mb-3 text-goldAccent">
+          <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-cursive text-3xl text-roseGold mb-2">A Sacred Wish & Blessing</h3>
+        <p class="text-xs md:text-sm text-gray-200 font-serif italic mb-4 leading-relaxed">
+          "May Allah bless our love with endless sweetness, peace, understanding, and eternal joy in this world and the Hereafter. Ameen 🤲🏻❤️"
+        </p>
+        <button onclick="closeWishModal()" class="px-5 py-2 rounded-full bg-deepRuby text-roseGold text-xs font-semibold hover:bg-pink-900 border border-roseGold/40 transition-all">
+          Keep Celebrating ✨
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- WHY I LOVE YOU - EVERY LITTLE DETAIL GRID -->
+  <section class="py-24 px-4 max-w-6xl mx-auto">
+    <div class="text-center space-y-4 mb-16">
+      <span class="text-roseGold text-xs uppercase tracking-widest font-semibold">Every Single Detail About You</span>
+      <h2 class="font-cursive text-4xl sm:text-6xl text-romanticPink glow-text-pink">
+        Addicted to Every Piece of You ❤️
+      </h2>
+      <p class="text-gray-300 font-light text-sm md:text-base max-w-xl mx-auto">
+        Jaan, your beauty isn't just in your face or body—it's in the way you care, your softness, your habits, and your beautiful soul. Click any card to explore my heart!
+      </p>
+    </div>
+
+    <!-- Details Card Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Detail Item 1 -->
+      <div class="glass-card p-6 rounded-2xl border border-roseGold/20 hover:border-roseGold/60 transition-all hover:-translate-y-2 group cursor-pointer" onclick="toggleDetailModal('Your Beautiful Eyes & Eyelashes 👁️✨', 'Your eyes are like two beautiful universes where my heart loves to get lost forever. Your eyelashes make every single blink carry a little piece of heaven.')">
+        <div class="w-12 h-12 rounded-xl bg-deepRuby/40 text-roseGold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <i data-lucide="eye" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-serif text-xl font-semibold text-roseGold mb-2">Your Universe Eyes 👁️</h3>
+        <p class="text-gray-300 text-xs md:text-sm leading-relaxed line-clamp-3">
+          Two beautiful universes where my heart wants to get lost. Every blink of your eyelashes carries a little bit of heaven.
+        </p>
+        <span class="inline-block mt-4 text-xs text-goldAccent font-medium group-hover:underline">Tap to read full note →</span>
+      </div>
+
+      <!-- Detail Item 2 -->
+      <div class="glass-card p-6 rounded-2xl border border-roseGold/20 hover:border-roseGold/60 transition-all hover:-translate-y-2 group cursor-pointer" onclick="toggleDetailModal('Your Smile & Cheeks 😊🌸', 'Your smile makes the whole world feel softer and brighter. Seeing you happy is my favourite happiness. And your adorable cheeks deserve endless soft kisses!')">
+        <div class="w-12 h-12 rounded-xl bg-deepRuby/40 text-roseGold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <i data-lucide="smile" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-serif text-xl font-semibold text-roseGold mb-2">Your Magical Smile 😊</h3>
+        <p class="text-gray-300 text-xs md:text-sm leading-relaxed line-clamp-3">
+          Makes the world feel softer and brighter. Your adorable cheeks look so sweet I wish I could cup your face in my hands forever.
+        </p>
+        <span class="inline-block mt-4 text-xs text-goldAccent font-medium group-hover:underline">Tap to read full note →</span>
+      </div>
+
+      <!-- Detail Item 3 -->
+      <div class="glass-card p-6 rounded-2xl border border-roseGold/20 hover:border-roseGold/60 transition-all hover:-translate-y-2 group cursor-pointer" onclick="toggleDetailModal('Your Voice & Peace 🎙️🕊️', 'I am addicted to your voice because it brings a kind of peace to my heart that I cannot find anywhere else in this entire world.')">
+        <div class="w-12 h-12 rounded-xl bg-deepRuby/40 text-roseGold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <i data-lucide="mic" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-serif text-xl font-semibold text-roseGold mb-2">Your Peaceful Voice 🎙️</h3>
+        <p class="text-gray-300 text-xs md:text-sm leading-relaxed line-clamp-3">
+          Brings a peace to my heart that I cannot find anywhere else. One thought or word from you turns an ordinary day into magic.
+        </p>
+        <span class="inline-block mt-4 text-xs text-goldAccent font-medium group-hover:underline">Tap to read full note →</span>
+      </div>
+
+      <!-- Detail Item 4 -->
+      <div class="glass-card p-6 rounded-2xl border border-roseGold/20 hover:border-roseGold/60 transition-all hover:-translate-y-2 group cursor-pointer" onclick="toggleDetailModal('Your Gentle Hands & Fingers 🤝💖', 'Your hands are precious to me because I dream of holding them through life’s happiest moments and hardest days. Intertwining our fingers and walking side by side...')">
+        <div class="w-12 h-12 rounded-xl bg-deepRuby/40 text-roseGold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <i data-lucide="hand" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-serif text-xl font-semibold text-roseGold mb-2">Your Warm Hands 🤝</h3>
+        <p class="text-gray-300 text-xs md:text-sm leading-relaxed line-clamp-3">
+          I dream of placing soft kisses on your palms and intertwining our fingers together through every season of life.
+        </p>
+        <span class="inline-block mt-4 text-xs text-goldAccent font-medium group-hover:underline">Tap to read full note →</span>
+      </div>
+
+      <!-- Detail Item 5 -->
+      <div class="glass-card p-6 rounded-2xl border border-roseGold/20 hover:border-roseGold/60 transition-all hover:-translate-y-2 group cursor-pointer" onclick="toggleDetailModal('Your Cute Fat Thumb! 🥺❤️', 'And your cute, fat thumb! 😭❤️ Even that deserves its own little love story. Who else could make me find something so tiny and ordinary so ridiculously adorable?')">
+        <div class="w-12 h-12 rounded-xl bg-deepRuby/40 text-roseGold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <i data-lucide="thumbs-up" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-serif text-xl font-semibold text-roseGold mb-2">Your Cute Thumb 🥺</h3>
+        <p class="text-gray-300 text-xs md:text-sm leading-relaxed line-clamp-3">
+          Even your cute fat thumb has its own love story! Who else could make the smallest details feel so ridiculously adorable?
+        </p>
+        <span class="inline-block mt-4 text-xs text-goldAccent font-medium group-hover:underline">Tap to read full note →</span>
+      </div>
+
+      <!-- Detail Item 6 -->
+      <div class="glass-card p-6 rounded-2xl border border-roseGold/20 hover:border-roseGold/60 transition-all hover:-translate-y-2 group cursor-pointer" onclick="toggleDetailModal('Your Mentor & Teacher Soul 🎓🌸', 'Thank you for being my mentor, my teacher, my friend, my humdum, and my love. Thank you for guiding me, correcting me, and letting me learn with you.')">
+        <div class="w-12 h-12 rounded-xl bg-deepRuby/40 text-roseGold flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <i data-lucide="sparkle" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-serif text-xl font-semibold text-roseGold mb-2">My Mentor & Humdum 🕊️</h3>
+        <p class="text-gray-300 text-xs md:text-sm leading-relaxed line-clamp-3">
+          My best friend, teacher, and guide. The person with whom I dream of building something beautiful while becoming a better person.
+        </p>
+        <span class="inline-block mt-4 text-xs text-goldAccent font-medium group-hover:underline">Tap to read full note →</span>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- LOVE LETTER & POEM TABBED JOURNAL -->
+  <section id="letter-section" class="py-24 px-4 bg-gradient-to-b from-nightBg via-velvetRed/30 to-nightBg">
+    <div class="max-w-4xl mx-auto glass-card rounded-3xl p-6 sm:p-10 border border-roseGold/30 shadow-2xl relative">
+      
+      <!-- Tab Navigation Header -->
+      <div class="flex justify-center gap-2 sm:gap-4 border-b border-roseGold/20 pb-6 mb-8 flex-wrap">
+        <button onclick="switchTab('letter')" id="tab-btn-letter" class="px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all bg-gradient-to-r from-deepRuby to-velvetRed text-goldAccent shadow-md border border-goldAccent/30">
+          💌 The Anniversary Letter
+        </button>
+        <button onclick="switchTab('poem')" id="tab-btn-poem" class="px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all text-gray-300 hover:text-roseGold hover:bg-roseGold/10">
+          📜 Anniversary Poem
+        </button>
+        <button onclick="switchTab('prayers')" id="tab-btn-prayers" class="px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all text-gray-300 hover:text-roseGold hover:bg-roseGold/10">
+          🤲🏻 Sacred Du'as & Prayers
+        </button>
+      </div>
+
+      <!-- Tab Content 1: The Anniversary Letter -->
+      <div id="tab-content-letter" class="space-y-6 text-gray-200 leading-relaxed font-light text-sm sm:text-base max-h-[500px] overflow-y-auto pr-2">
+        <p class="font-serif italic text-lg text-roseGold">
+          Jaan, guess what today is? 🥹❤️
+        </p>
+        <p>
+          Today is 23rd October, our official anniversary… the day our story became our love story. And you know what makes this day even more special for me? Today feels like Eid to my heart. More than Eid, it feels like the day Allah blessed my life with an angel like you. 💞
+        </p>
+        <p>
+          Alhamdulillah, Alhamdulillah, Alhamdulillah. No matter how many times I thank Allah, it will never feel enough for the blessing He gave me when He brought you into my life.
+        </p>
+        <p>
+          Thank you so much, meri jaan, for coming into my life, for choosing me, for loving me, and for putting up with me even when I'm difficult to understand. Thank you for your patience, your care, your love, and for being a part of my world. You have made my life more beautiful in ways I never knew were possible.
+        </p>
+        <p>
+          I still remember that day when we were both confused about what we were, what we felt, and what we were becoming. We didn't know exactly where our hearts were taking us, but somehow, little by little, everything started making sense. What began with confusion became something so precious to me that I cannot imagine my life without it.
+        </p>
+        <div class="p-4 rounded-xl bg-deepRuby/30 border-l-4 border-goldAccent text-roseGold italic font-serif my-4">
+          "Yes, jaan, I'm addicted to you — not just to having you, but to all the little things that make you you..."
+        </div>
+        <p>
+          You make my mornings sweeter, my afternoons warmer, my evenings more peaceful, and my nights more meaningful. When I'm alone, you make me feel as though my heart has someone to come home to.
+        </p>
+        <p class="text-goldAccent font-serif text-base pt-2">
+          Happy anniversary, my soso, my jaan, my angel, my humdum. Today, tomorrow, and in every beautiful tomorrow that Allah writes for us. ❤️♾️💍
+        </p>
+      </div>
+
+      <!-- Tab Content 2: Anniversary Poem -->
+      <div id="tab-content-poem" class="hidden space-y-6 text-gray-200 font-serif italic text-base sm:text-lg leading-loose text-center py-4 max-h-[500px] overflow-y-auto">
+        <div class="text-roseGold font-cursive text-3xl mb-4">On the Twenty-Third of October 💌</div>
+        
+        <p class="bg-deepRuby/20 p-4 rounded-2xl border border-roseGold/10">
+          On the twenty-third of October, my world began to glow,<br>
+          Two hearts unsure of what they felt, with nowhere else to go.<br>
+          Then slowly, love found its own words, and suddenly I knew,<br>
+          Among a million souls on earth, my heart had turned to you.
+        </p>
+
+        <p class="bg-deepRuby/20 p-4 rounded-2xl border border-roseGold/10">
+          I thank Allah for your eyes, your smile, your gentle soul,<br>
+          For every little piece of you that makes my broken days feel whole.<br>
+          From morning's light to midnight's sky, in everything I do,<br>
+          My favourite part of every day is having thoughts of you.
+        </p>
+
+        <p class="bg-deepRuby/20 p-4 rounded-2xl border border-roseGold/10">
+          Your eyes are where my dreams begin, your smile's my sweetest view,<br>
+          Your voice is like a quiet prayer that carries me back to you.<br>
+          Your hands are where I'd place my own, your heart I'd hold with care,<br>
+          And if the world feels cold one day, I hope to meet you there.
+        </p>
+
+        <p class="bg-deepRuby/20 p-4 rounded-2xl border border-roseGold/10">
+          So happy anniversary, jaan, my humdum and my heart,<br>
+          May Allah bless the beautiful story that He helped us start.<br>
+          And if you ask me what I want, through every dream come true,<br>
+          I'd still choose all the ordinary days that I get to share with you. ❤️
+        </p>
+      </div>
+
+      <!-- Tab Content 3: Du'as & Prayers -->
+      <div id="tab-content-prayers" class="hidden space-y-6 text-gray-200 text-sm sm:text-base leading-relaxed py-4 max-h-[500px] overflow-y-auto">
+        <div class="text-center mb-6">
+          <span class="text-goldAccent font-serif italic text-xl">"My Prayers for You and Our Journey"</span>
+        </div>
+
+        <div class="glass-card-gold p-6 rounded-2xl space-y-3">
+          <div class="flex items-center gap-2 text-goldAccent font-semibold">
+            <i data-lucide="shield-check" class="w-5 h-5"></i> Prayer for Protection & Joy
+          </div>
+          <p class="text-gray-300 font-light text-xs md:text-sm">
+            I pray that Allah protects you, blesses you with good health, gives peace to your heart, fulfils your beautiful dreams, and grants you happiness in this life and the Hereafter.
+          </p>
+        </div>
+
+        <div class="glass-card-gold p-6 rounded-2xl space-y-3">
+          <div class="flex items-center gap-2 text-goldAccent font-semibold">
+            <i data-lucide="sparkles" class="w-5 h-5"></i> Prayer for Our Togetherness
+          </div>
+          <p class="text-gray-300 font-light text-xs md:text-sm">
+            If being together is written for us, may Allah make our path towards each other easy, bless our love with goodness, and let us build a life filled with mercy, respect, laughter, loyalty, and peace. Ameen. 🤲🏻❤️
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- SECRET WAX-SEALED ENVELOPE SURPRISE -->
+  <section class="py-24 px-4 text-center bg-gradient-to-t from-nightBg to-velvetRed/10">
+    <div class="max-w-md mx-auto space-y-6">
+      <h2 class="font-cursive text-4xl sm:text-5xl text-roseGold">
+        A Final Secret Note For You ✉️
+      </h2>
+      <p class="text-gray-300 text-xs md:text-sm font-light">
+        Tap the wax seal to unlock the glowing heart note inside...
+      </p>
+
+      <!-- Wax Sealed Envelope Container -->
+      <div id="envelope-container" class="relative cursor-pointer group py-8" onclick="openEnvelope()">
+        <div class="w-72 sm:w-80 h-48 mx-auto glass-card-gold rounded-2xl border-2 border-goldAccent/50 relative shadow-2xl flex items-center justify-center transition-all group-hover:scale-105">
+          <!-- Wax Seal -->
+          <div id="wax-seal" class="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-deepRuby border-2 border-goldAccent shadow-xl flex items-center justify-center text-goldAccent font-serif text-xl font-bold transition-transform group-hover:rotate-12">
+            ❤️
+          </div>
+        </div>
+      </div>
+
+      <!-- Unlocked Envelope Modal Message -->
+      <div id="envelope-modal" class="hidden glass-card p-8 rounded-3xl border border-goldAccent max-w-lg mx-auto text-left space-y-4 animate-fade-in shadow-2xl">
+        <div class="flex justify-between items-center border-b border-roseGold/20 pb-3">
+          <span class="font-serif italic text-goldAccent text-lg">My Angel, My Soso 💍</span>
+          <i data-lucide="heart" class="w-5 h-5 text-romanticPink fill-romanticPink"></i>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-200 leading-relaxed font-light">
+          "If I could go back to the day we first started figuring out what we were, I would smile at that confused version of us and tell him: <span class="text-roseGold italic">'Just wait. One day, you'll understand why this person has become so precious to you.'</span>"
+        </p>
+        <p class="text-xs sm:text-sm text-gray-200 leading-relaxed font-light">
+          Alhamdulillah for you, jaan. Today, tomorrow, and in every beautiful tomorrow that Allah writes for us. ❤️♾️
+        </p>
+        <div class="pt-2 text-right">
+          <span class="font-cursive text-2xl text-roseGold">Forever Yours</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer class="py-12 border-t border-roseGold/10 text-center text-xs text-roseGold/60 space-y-2">
+    <p class="font-serif italic">Created with Endless Love & Prayers for My Jaan ❤️</p>
+    <p>© 23rd October • Blessed Anniversary Celebration</p>
+  </footer>
+
+
+  <!-- DETAIL MODAL OVERLAY -->
+  <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card-gold p-8 rounded-3xl max-w-lg w-full space-y-4 border border-roseGold text-center relative animate-fade-in">
+      <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      <div id="modal-icon" class="text-4xl mb-2">✨</div>
+      <h3 id="modal-title" class="font-serif text-2xl text-roseGold font-semibold"></h3>
+      <p id="modal-body" class="text-xs sm:text-sm text-gray-200 leading-relaxed font-light pt-2 border-t border-roseGold/20"></p>
+      <button onclick="closeDetailModal()" class="mt-4 px-6 py-2 rounded-full bg-deepRuby text-roseGold text-xs font-semibold hover:bg-pink-900 transition-all border border-roseGold/30">
+        Close Note ❤️
+      </button>
+    </div>
+  </div>
+
+
+  <!-- JAVASCRIPT INTERACTION LOGIC -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // -------------------------------------------------------------
+    // Ambient Music Synth Generator (Web Audio API - No External Audio File Needed)
+    // -------------------------------------------------------------
+    let audioCtx = null;
+    let isPlaying = false;
+    let synthInterval = null;
+
+    const chords = [
+      [261.63, 329.63, 392.00, 493.88], // Cmaj7
+      [220.00, 261.63, 329.63, 392.00], // Am7
+      [174.61, 220.00, 261.63, 329.63], // Fmaj7
+      [196.00, 246.94, 293.66, 392.00]  // G
+    ];
+
+    function playNote(freq, duration = 3) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      
+      gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 1);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function startAmbientSynth() {
+      let step = 0;
+      synthInterval = setInterval(() => {
+        const chord = chords[step % chords.length];
+        chord.forEach((freq, idx) => {
+          setTimeout(() => playNote(freq, 4), idx * 400);
+        });
+        step++;
+      }, 4000);
+    }
+
+    document.getElementById('music-toggle').addEventListener('click', () => {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (isPlaying) {
+        clearInterval(synthInterval);
+        isPlaying = false;
+        document.getElementById('music-toggle').classList.remove('animate-pulse');
+      } else {
+        startAmbientSynth();
+        isPlaying = true;
+        document.getElementById('music-toggle').classList.add('animate-pulse');
+      }
+    });
+
+
+    // -------------------------------------------------------------
+    // Particle Trailing Effect on Mouse/Touch Move
+    // -------------------------------------------------------------
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 8 + 3;
+        this.speedX = (Math.random() - 0.5) * 1.5;
+        this.speedY = (Math.random() - 0.5) * 1.5 - 1;
+        this.color = `hsl(${Math.random() * 30 + 330}, 100%, 75%)`;
+        this.opacity = 1;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.opacity -= 0.02;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.opacity);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        // Draw heart shape particle
+        ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function handlePointerMove(e) {
+      const x = e.clientX || (e.touches && e.touches[0].clientX);
+      const y = e.clientY || (e.touches && e.touches[0].clientY);
+      if (x && y) {
+        for (let i = 0; i < 2; i++) {
+          particles.push(new Particle(x, y));
+        }
+      }
+    }
+
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('touchmove', handlePointerMove);
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].opacity <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+
+    // -------------------------------------------------------------
+    // Floating Balloons Logic
+    // -------------------------------------------------------------
+    const balloonsContainer = document.getElementById('balloons-container');
+    const balloonQuotes = [
+      "You are my favorite thought 💖",
+      "Addicted to your smile 😊",
+      "My heart's forever home 🏡❤️",
+      "Alhamdulillah for you 🤲🏻",
+      "My Angel & Humdum 💍"
+    ];
+
+    function spawnBalloon() {
+      const balloon = document.createElement('div');
+      balloon.className = 'absolute cursor-pointer transition-transform hover:scale-125 pointer-events-auto flex flex-col items-center';
+      balloon.style.left = Math.random() * 90 + '%';
+      balloon.style.bottom = '-100px';
+
+      const randomQuote = balloonQuotes[Math.floor(Math.random() * balloonQuotes.length)];
+      
+      balloon.innerHTML = `
+        <div class="w-10 h-12 rounded-full bg-gradient-to-tr from-deepRuby to-romanticPink border border-roseGold/40 shadow-lg flex items-center justify-center text-white text-xs">❤️</div>
+        <div class="w-0.5 h-8 bg-roseGold/40"></div>
+      `;
+
+      balloonsContainer.appendChild(balloon);
+
+      let pos = -100;
+      const speed = Math.random() * 1 + 0.8;
+
+      const anim = setInterval(() => {
+        pos += speed;
+        balloon.style.bottom = pos + 'px';
+
+        if (pos > window.innerHeight + 100) {
+          clearInterval(anim);
+          balloon.remove();
+        }
+      }, 20);
+
+      balloon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        confetti({
+          particleCount: 25,
+          spread: 60,
+          origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight }
+        });
+        
+        toggleDetailModal('Balloon Wish 🎈', randomQuote);
+        clearInterval(anim);
+        balloon.remove();
+      });
+    }
+
+    setInterval(spawnBalloon, 4500);
+
+
+    // -------------------------------------------------------------
+    // Cake Ceremony Interaction Logic
+    // -------------------------------------------------------------
+    let candlesExtinguished = 0;
+
+    function extinguishCandle(element, event) {
+      event.stopPropagation();
+      const flame = element.querySelector('.candle-flame');
+      if (flame && flame.style.display !== 'none') {
+        flame.style.display = 'none';
+        candlesExtinguished++;
+        
+        confetti({
+          particleCount: 15,
+          spread: 40,
+          origin: { x: event.clientX / window.innerWidth, y: event.clientY / window.innerHeight }
+        });
+
+        if (candlesExtinguished >= 3) {
+          setTimeout(() => cutCake(), 600);
+        }
+      }
+    }
+
+    function cutCake() {
+      // Confetti burst for cake cutting
+      confetti({
+        particleCount: 100,
+        spread: 100,
+        origin: { y: 0.6 }
+      });
+
+      document.getElementById('cake-wish-modal').classList.remove('hidden');
+    }
+
+    function closeWishModal() {
+      document.getElementById('cake-wish-modal').classList.add('hidden');
+    }
+
+
+    // -------------------------------------------------------------
+    // Tabbed Journal Navigation
+    // -------------------------------------------------------------
+    function switchTab(tabName) {
+      const tabs = ['letter', 'poem', 'prayers'];
+      tabs.forEach(tab => {
+        const content = document.getElementById(`tab-content-${tab}`);
+        const btn = document.getElementById(`tab-btn-${tab}`);
+        if (tab === tabName) {
+          content.classList.remove('hidden');
+          btn.className = "px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all bg-gradient-to-r from-deepRuby to-velvetRed text-goldAccent shadow-md border border-goldAccent/30";
+        } else {
+          content.classList.add('hidden');
+          btn.className = "px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all text-gray-300 hover:text-roseGold hover:bg-roseGold/10";
+        }
+      });
+    }
+
+
+    // -------------------------------------------------------------
+    // Wax Seal Envelope Logic
+    // -------------------------------------------------------------
+    function openEnvelope() {
+      const seal = document.getElementById('wax-seal');
+      seal.style.transform = 'scale(0) rotate(180deg)';
+      
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.8 }
+      });
+
+      setTimeout(() => {
+        document.getElementById('envelope-container').classList.add('hidden');
+        document.getElementById('envelope-modal').classList.remove('hidden');
+      }, 500);
+    }
+
+
+    // -------------------------------------------------------------
+    // Detail Note Modal Logic
+    // -------------------------------------------------------------
+    function toggleDetailModal(title, text) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-body').innerText = text;
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+  </script>
+
+</body>
+</html>
